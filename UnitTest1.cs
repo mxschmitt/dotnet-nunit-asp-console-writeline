@@ -18,14 +18,10 @@ public class Tests
         var builder = new WebHostBuilder()
             .Configure(app =>
             {
-                var currentExecutionContext = TestExecutionContext.CurrentContext;
+                var capturedExecutionContext = ExecutionContext.Capture();
                 app.Run(async context =>
                 {
-                    {
-                        // This hack allows us to have Console.WriteLine etc. appear in the test output.
-                        var currentContext = typeof(TestExecutionContext).GetField("AsyncLocalCurrentContext", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null) as AsyncLocal<TestExecutionContext>;
-                        currentContext.Value = currentExecutionContext;
-                    }
+                    ExecutionContext.Restore(capturedExecutionContext);
                     Debug.WriteLine("1. This is Debug.WriteLine");
                     Trace.WriteLine("2. This is Trace.WriteLine");
                     Console.WriteLine("3. This is Console.Writeline");
